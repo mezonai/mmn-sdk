@@ -27,11 +27,6 @@ export interface IEphemeralKeyPair {
   publicKey: string;
 }
 
-export interface IZkProof {
-  proof: string;
-  public_input: string;
-}
-
 export enum ETransferType {
   GiveCoffee = 'give_coffee',
   TransferToken = 'transfer_token',
@@ -39,16 +34,17 @@ export enum ETransferType {
 }
 
 export interface ExtraInfo {
-  type: ETransferType;
+  type: ETransferType | string;
   ItemId?: string;
   ItemType?: string;
   ClanId?: string;
   UserSenderId: string;
   UserSenderUsername: string;
-  UserReceiverId: string;
+  UserReceiverId?: string;
   ChannelId?: string;
   MessageRefId?: string;
   ExtraAttribute?: string;
+  [x: string]: string;
 }
 
 export interface TxMsg {
@@ -183,7 +179,7 @@ export interface TransactionDetailResponse {
   };
 }
 
-// ----------------- Client -----------------
+// ----------------- Indexer Client -----------------
 export interface IndexerClientConfig {
   endpoint: string;
   chainId: string;
@@ -191,8 +187,27 @@ export interface IndexerClientConfig {
   headers?: Record<string, string>;
 }
 
+// ----------------- Zk Client -----------------
 export interface ZkClientConfig {
   endpoint: string;
   timeout?: number;
   headers?: Record<string, string>;
+}
+
+export enum EZkClientType {
+  MEZON = 'mezon',
+  OAUTH = 'oauth',
+}
+
+export interface GetZkProofRequest {
+  userId: string;
+  ephemeralPublicKey: string;
+  jwt: string;
+  address: string;
+  clientType?: EZkClientType;
+}
+
+export interface IZkProof {
+  proof: string;
+  public_input: string;
 }

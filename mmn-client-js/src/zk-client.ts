@@ -1,4 +1,9 @@
-import { ZkClientConfig, IZkProof } from './types';
+import {
+  ZkClientConfig,
+  IZkProof,
+  GetZkProofRequest,
+  EZkClientType,
+} from './types';
 
 export class ZkClient {
   private endpoint: string;
@@ -76,12 +81,8 @@ export class ZkClient {
     ephemeralPublicKey,
     jwt,
     address,
-  }: {
-    userId: string;
-    ephemeralPublicKey: string;
-    jwt: string;
-    address: string;
-  }): Promise<IZkProof> {
+    clientType = EZkClientType.MEZON,
+  }: GetZkProofRequest): Promise<IZkProof> {
     const path = `prove`;
     const res = await this.makeRequest<{ data: IZkProof }>(
       'POST',
@@ -92,6 +93,7 @@ export class ZkClient {
         ephemeral_pk: ephemeralPublicKey,
         jwt,
         address,
+        client_type: clientType,
       }
     );
 
