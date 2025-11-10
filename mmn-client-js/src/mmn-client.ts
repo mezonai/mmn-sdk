@@ -147,7 +147,7 @@ const PRNG_CONSTANTS = {
 
 const TX_TYPE = {
   TRANSFER: 0,
-  FAUCET: 1,
+  PRIVATE_KEY: 1,
 } as const;
 
 const DECIMALS = 6;
@@ -562,7 +562,7 @@ export class MmnClient {
       keyPair.secretKey.fill(0);
 
       // Return signature based on transaction type
-      if (tx.type === TX_TYPE.FAUCET) {
+      if (tx.type === TX_TYPE.PRIVATE_KEY) {
         return bs58.encode(BufferCompat.from(signature));
       }
 
@@ -629,7 +629,7 @@ export class MmnClient {
   ): Promise<AddTxResponse> {
     const signedTx = this.createAndSignTx({
       ...params,
-      type: TX_TYPE.FAUCET,
+      type: TX_TYPE.PRIVATE_KEY,
     });
 
     return this.addTx(signedTx);
