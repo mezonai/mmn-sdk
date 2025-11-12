@@ -147,7 +147,7 @@ const PRNG_CONSTANTS = {
 
 const TX_TYPE = {
   TRANSFER: 0,
-  FAUCET: 1,
+  PRIVATE_KEY: 1,
 } as const;
 
 const DECIMALS = 6;
@@ -300,8 +300,7 @@ export class MmnClient {
       // Clear sensitive data on error
       raw.fill(0);
       throw new Error(
-        `Failed to convert private key to PKCS#8: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to convert private key to PKCS#8: ${error instanceof Error ? error.message : 'Unknown error'
         }`
       );
     }
@@ -445,8 +444,7 @@ export class MmnClient {
       };
     } catch (error) {
       throw new Error(
-        `Failed to generate ephemeral key pair: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Failed to generate ephemeral key pair: ${error instanceof Error ? error.message : 'Unknown error'
         }`
       );
     }
@@ -564,7 +562,7 @@ export class MmnClient {
       keyPair.secretKey.fill(0);
 
       // Return signature based on transaction type
-      if (tx.type === TX_TYPE.FAUCET) {
+      if (tx.type === TX_TYPE.PRIVATE_KEY) {
         return bs58.encode(BufferCompat.from(signature));
       }
 
@@ -577,8 +575,7 @@ export class MmnClient {
       return bs58.encode(BufferCompat.from(JSON.stringify(userSig)));
     } catch (error) {
       throw new Error(
-        `Transaction signing failed: ${
-          error instanceof Error ? error.message : 'Unknown error'
+        `Transaction signing failed: ${error instanceof Error ? error.message : 'Unknown error'
         }`
       );
     }
@@ -622,6 +619,17 @@ export class MmnClient {
     const signedTx = this.createAndSignTx({
       ...params,
       type: TX_TYPE.TRANSFER,
+    });
+
+    return this.addTx(signedTx);
+  }
+
+  async sendTransactionByPrivateKey(
+    params: SendTransactionRequest
+  ): Promise<AddTxResponse> {
+    const signedTx = this.createAndSignTx({
+      ...params,
+      type: TX_TYPE.PRIVATE_KEY,
     });
 
     return this.addTx(signedTx);
