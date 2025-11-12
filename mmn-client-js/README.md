@@ -105,6 +105,7 @@ const walletInfo = await indexerClient.getWalletDetail('wallet-address');
 // Create ZK client for proof generation
 const zkClient = new ZkClient({
   endpoint: 'https://zk.mmn.network',
+  timeout: 30000,
   // chainId is not required for ZK client
 });
 
