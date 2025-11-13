@@ -38,8 +38,8 @@ export interface ExtraInfo {
   ItemId?: string;
   ItemType?: string;
   ClanId?: string;
-  UserSenderId: string;
-  UserSenderUsername: string;
+  UserSenderId?: string;
+  UserSenderUsername?: string;
   UserReceiverId?: string;
   ChannelId?: string;
   MessageRefId?: string;
