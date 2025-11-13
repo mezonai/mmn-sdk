@@ -13,7 +13,7 @@ import {
   JsonRpcResponse,
   MmnClientConfig,
   SendTransactionRequest,
-  SendTransactionRequestByPrivKey,
+  SendTransactionBase,
   SignedTx,
   TxMsg,
 } from './types';
@@ -626,7 +626,7 @@ export class MmnClient {
   }
 
   async sendTransactionByPrivateKey(
-    params: SendTransactionRequestByPrivKey
+    params: SendTransactionBase
   ): Promise<AddTxResponse> {
     const signedTx = this.createAndSignTx({
       ...params,

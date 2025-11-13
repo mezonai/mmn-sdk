@@ -73,16 +73,14 @@ export interface SendTransactionBase {
   timestamp?: number;
   textData?: string;
   privateKey: string;
+  extraInfo?: ExtraInfo;
 }
 
 export interface SendTransactionRequest extends SendTransactionBase {
-  extraInfo?: ExtraInfo;
   zkProof: string;
   zkPub: string;
   publicKey: string;
 }
-
-export interface SendTransactionRequestByPrivKey extends SendTransactionBase {}
 
 export interface AddTxResponse {
   ok: boolean;
