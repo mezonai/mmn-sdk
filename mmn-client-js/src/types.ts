@@ -65,19 +65,24 @@ export interface SignedTx {
   signature: string;
 }
 
-export interface SendTransactionRequest {
+export interface SendTransactionBase {
   sender: string;
   recipient: string;
   amount: string;
   nonce: number;
   timestamp?: number;
   textData?: string;
-  extraInfo?: ExtraInfo;
-  publicKey: string;
   privateKey: string;
+}
+
+export interface SendTransactionRequest extends SendTransactionBase {
+  extraInfo?: ExtraInfo;
   zkProof: string;
   zkPub: string;
+  publicKey: string;
 }
+
+export interface SendTransactionRequestByPrivKey extends SendTransactionBase {}
 
 export interface AddTxResponse {
   ok: boolean;
