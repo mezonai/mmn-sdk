@@ -105,7 +105,8 @@ const walletInfo = await indexerClient.getWalletDetail('wallet-address');
 // Create ZK client for proof generation
 const zkClient = new ZkClient({
   endpoint: 'https://zk.mmn.network',
-  chainId: 'mmn-mainnet',
+  timeout: 30000,
+  // chainId is not required for ZK client
 });
 
 // Generate ZK proof for authentication
@@ -175,6 +176,21 @@ const response = await client.sendTransaction({
   privateKey: 'private-key-pkcs8-hex',
   zkProof: 'zk-proof-string',
   zkPub: 'zk-public-string'
+});
+```
+
+**`sendTransactionByPrivateKey(params): Promise<AddTxResponse>`**
+Create, sign (using the provided private key) and submit a transaction without relying on a client-stored keypair.
+
+```typescript
+const response = await client.sendTransactionByPrivateKey({
+  sender: 'user123',
+  recipient: 'user456',
+  amount: '1000000000000000000',
+  nonce: 1,
+  textData: 'Optional message',
+  extraInfo: { type: 'transfer_token', UserSenderId: 'user123', ... },
+  privateKey: 'private-key-pkcs8-hex'
 });
 ```
 
