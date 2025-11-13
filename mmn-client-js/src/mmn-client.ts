@@ -13,6 +13,7 @@ import {
   JsonRpcResponse,
   MmnClientConfig,
   SendTransactionRequest,
+  SendTransactionBase,
   SignedTx,
   TxMsg,
 } from './types';
@@ -469,10 +470,10 @@ export class MmnClient {
     textData?: string;
     nonce: number;
     extraInfo?: ExtraInfo;
-    publicKey: string;
+    publicKey?: string;
     privateKey: string;
-    zkProof: string;
-    zkPub: string;
+    zkProof?: string;
+    zkPub?: string;
   }): SignedTx {
     if (!this.validateAddress(params.sender)) {
       throw new Error('Invalid sender address');
@@ -493,8 +494,8 @@ export class MmnClient {
       text_data: params.textData || '',
       nonce: params.nonce,
       extra_info: JSON.stringify(params.extraInfo) || '',
-      zk_proof: params.zkProof,
-      zk_pub: params.zkPub,
+      zk_proof: params.zkProof || '',
+      zk_pub: params.zkPub || '',
     };
 
     const signature = this.signTransaction(txMsg, params.privateKey);
@@ -625,7 +626,7 @@ export class MmnClient {
   }
 
   async sendTransactionByPrivateKey(
-    params: SendTransactionRequest
+    params: SendTransactionBase
   ): Promise<AddTxResponse> {
     const signedTx = this.createAndSignTx({
       ...params,

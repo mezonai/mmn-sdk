@@ -38,8 +38,8 @@ export interface ExtraInfo {
   ItemId?: string;
   ItemType?: string;
   ClanId?: string;
-  UserSenderId: string;
-  UserSenderUsername: string;
+  UserSenderId?: string;
+  UserSenderUsername?: string;
   UserReceiverId?: string;
   ChannelId?: string;
   MessageRefId?: string;
@@ -65,18 +65,21 @@ export interface SignedTx {
   signature: string;
 }
 
-export interface SendTransactionRequest {
+export interface SendTransactionBase {
   sender: string;
   recipient: string;
   amount: string;
   nonce: number;
   timestamp?: number;
   textData?: string;
-  extraInfo?: ExtraInfo;
-  publicKey: string;
   privateKey: string;
+  extraInfo?: ExtraInfo;
+}
+
+export interface SendTransactionRequest extends SendTransactionBase {
   zkProof: string;
   zkPub: string;
+  publicKey: string;
 }
 
 export interface AddTxResponse {
