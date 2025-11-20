@@ -1,13 +1,13 @@
-const resolve = require('@rollup/plugin-node-resolve');
+const resolve = require('@rollup/plugin-node-resolve').default || require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const json = require('@rollup/plugin-json');
 const typescript = require('@rollup/plugin-typescript');
-const { dts } = require('rollup-plugin-dts');
+const dts = require('rollup-plugin-dts').default;
 
 const packageJson = require('./package.json');
 
 // External dependencies that should not be bundled
-const external = ['crypto', 'axios', 'bs58', 'bip39', 'tweetnacl'];
+const external = ['crypto', 'axios', 'bs58', 'bip39', 'tweetnacl', 'node-fetch', 'abort-controller'];
 
 module.exports = [
   // ES Module build

@@ -3,6 +3,7 @@
 import bs58 from 'bs58';
 import nacl from 'tweetnacl';
 import CryptoJS from 'crypto-js';
+import { fetchPolyfill, AbortControllerPolyfill } from './http-client';
 import {
   AddTxResponse,
   ExtraInfo,
@@ -177,7 +178,7 @@ export class MmnClient {
     };
 
     // Create AbortController for timeout
-    const controller = new AbortController();
+    const controller = new AbortControllerPolyfill();
     const timeoutId = setTimeout(
       () => controller.abort(),
       this.config.timeout || 30000
@@ -193,7 +194,7 @@ export class MmnClient {
         body: JSON.stringify(request),
       };
 
-      const response = await fetch(this.config.baseUrl, requestOptions);
+      const response = await fetchPolyfill(this.config.baseUrl, requestOptions);
       clearTimeout(timeoutId);
 
       if (!response.ok) {

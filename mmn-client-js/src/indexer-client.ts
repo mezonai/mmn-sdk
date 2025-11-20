@@ -6,6 +6,7 @@ import {
   WalletDetail,
   WalletDetailResponse,
 } from './types';
+import { fetchPolyfill, AbortControllerPolyfill } from './http-client';
 
 const API_FILTER_PARAMS = {
   ALL: 0,
@@ -59,7 +60,7 @@ export class IndexerClient {
     }
 
     // Create AbortController for timeout
-    const controller = new AbortController();
+    const controller = new AbortControllerPolyfill();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
@@ -82,7 +83,7 @@ export class IndexerClient {
           'application/json';
       }
 
-      const response = await fetch(url, requestOptions);
+      const response = await fetchPolyfill(url, requestOptions);
       clearTimeout(timeoutId);
 
       // Handle response errors
