@@ -4,6 +4,7 @@ import {
   GetZkProofRequest,
   EZkClientType,
 } from './types';
+import { fetchPolyfill, AbortControllerPolyfill } from './http-client';
 
 export class ZkClient {
   private endpoint: string;
@@ -38,7 +39,7 @@ export class ZkClient {
     }
 
     // Create AbortController for timeout
-    const controller = new AbortController();
+    const controller = new AbortControllerPolyfill();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
@@ -55,7 +56,7 @@ export class ZkClient {
         requestOptions.body = JSON.stringify(body);
       }
 
-      const response = await fetch(url, requestOptions);
+      const response = await fetchPolyfill(url, requestOptions);
       clearTimeout(timeoutId);
 
       if (!response.ok) {
