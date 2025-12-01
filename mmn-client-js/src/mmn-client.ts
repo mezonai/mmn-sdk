@@ -637,6 +637,17 @@ export class MmnClient {
     return this.addTx(signedTx);
   }
 
+  async postDonationCampaignFeed(
+    params: SendTransactionRequest
+  ): Promise<AddTxResponse> {
+    const signedTx = this.createAndSignTx({
+      ...params,
+      type: TX_TYPE.DONATION_CAMPAIGN_FEED,
+    });
+
+    return this.addTx(signedTx);
+  }
+
   /**
    * Get current nonce for an account
    */
