@@ -112,17 +112,24 @@ export interface MmnClientConfig {
 
 // ----------------- Types Indexer -----------------
 
-export interface Transaction {
+export interface BaseTransaction {
   chain_id: string;
   hash: string;
   nonce: number;
   block_hash: string;
   block_number: number;
-  block_timestamp: number;
-  transaction_index: number;
   from_address: string;
   to_address: string;
   value: string; // uint256 -> string
+  transaction_type: number;
+  transaction_timestamp: number;
+  status?: number;
+  text_data?: string;
+  extra_info?: string;
+}
+export interface EvmTransaction extends BaseTransaction {
+  block_timestamp: number;
+  transaction_index: number;
   gas: number;
   gas_price: string;
   data: string;
@@ -130,26 +137,20 @@ export interface Transaction {
   max_fee_per_gas: string;
   max_priority_fee_per_gas: string;
   max_fee_per_blob_gas?: string;
+  effective_gas_price?: string;
   blob_versioned_hashes?: string[];
-  transaction_type: number;
+  blob_gas_used?: number;
+  blob_gas_price?: string;
   r: string;
   s: string;
   v: string;
-  access_list_json?: string;
-  authorization_list_json?: string;
-  contract_address?: string;
   gas_used?: number;
   cumulative_gas_used?: number;
-  effective_gas_price?: string;
-  blob_gas_used?: number;
-  blob_gas_price?: string;
+  contract_address?: string;
   logs_bloom?: string;
-  status?: number;
-  transaction_timestamp: number;
-  text_data: string;
-  extra_info: string;
+  access_list_json?: string;
+  authorization_list_json?: string;
 }
-
 export interface Meta {
   chain_id: number;
   address?: string;
@@ -158,6 +159,9 @@ export interface Meta {
   limit?: number;
   total_items?: number;
   total_pages?: number;
+  has_more?: boolean;
+  next_timestamp?: string;
+  next_hash?: string;
 }
 
 export interface WalletDetail {
@@ -173,12 +177,12 @@ export interface WalletDetailResponse {
 
 export interface ListTransactionResponse {
   meta: Meta;
-  data?: Transaction[];
+  data?: EvmTransaction[];
 }
 
 export interface TransactionDetailResponse {
   data: {
-    transaction: Transaction;
+    transaction: EvmTransaction;
   };
 }
 
