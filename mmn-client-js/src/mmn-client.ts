@@ -149,7 +149,7 @@ const PRNG_CONSTANTS = {
 const TX_TYPE = {
   TRANSFER_BY_ZK: 0,
   TRANSFER_BY_KEY: 1,
-  DONATION_CAMPAIGN_FEED: 2,
+  USER_CONTENT: 2,
 } as const;
 
 const DECIMALS = 6;
@@ -642,7 +642,7 @@ export class MmnClient {
   ): Promise<AddTxResponse> {
     const signedTx = this.createAndSignTx({
       ...params,
-      type: TX_TYPE.DONATION_CAMPAIGN_FEED,
+      type: TX_TYPE.USER_CONTENT,
     });
 
     return this.addTx(signedTx);
