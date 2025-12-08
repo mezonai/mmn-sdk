@@ -147,8 +147,9 @@ const PRNG_CONSTANTS = {
 } as const;
 
 const TX_TYPE = {
-  TRANSFER: 0,
-  PRIVATE_KEY: 1,
+  TRANSFER_BY_ZK: 0,
+  TRANSFER_BY_KEY: 1,
+  USER_CONTENT: 2,
 } as const;
 
 const DECIMALS = 6;
@@ -563,7 +564,7 @@ export class MmnClient {
       keyPair.secretKey.fill(0);
 
       // Return signature based on transaction type
-      if (tx.type === TX_TYPE.PRIVATE_KEY) {
+      if (tx.type === TX_TYPE.TRANSFER_BY_KEY) {
         return bs58.encode(BufferCompat.from(signature));
       }
 
@@ -607,7 +608,7 @@ export class MmnClient {
     const toAddress = this.getAddressFromUserId(params.recipient);
     const signedTx = this.createAndSignTx({
       ...params,
-      type: TX_TYPE.TRANSFER,
+      type: TX_TYPE.TRANSFER_BY_ZK,
       sender: fromAddress,
       recipient: toAddress,
     });
@@ -619,7 +620,7 @@ export class MmnClient {
   ): Promise<AddTxResponse> {
     const signedTx = this.createAndSignTx({
       ...params,
-      type: TX_TYPE.TRANSFER,
+      type: TX_TYPE.TRANSFER_BY_ZK,
     });
 
     return this.addTx(signedTx);
@@ -630,7 +631,18 @@ export class MmnClient {
   ): Promise<AddTxResponse> {
     const signedTx = this.createAndSignTx({
       ...params,
-      type: TX_TYPE.PRIVATE_KEY,
+      type: TX_TYPE.TRANSFER_BY_KEY,
+    });
+
+    return this.addTx(signedTx);
+  }
+
+  async postDonationCampaignFeed(
+    params: SendTransactionRequest
+  ): Promise<AddTxResponse> {
+    const signedTx = this.createAndSignTx({
+      ...params,
+      type: TX_TYPE.USER_CONTENT,
     });
 
     return this.addTx(signedTx);
