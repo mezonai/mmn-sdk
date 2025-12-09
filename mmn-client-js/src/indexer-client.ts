@@ -111,6 +111,43 @@ export class IndexerClient {
     const res = await this.makeRequest<TransactionDetailResponse>('GET', path);
     return res.data.transaction;
   }
+  async getTransactionsByWalletBeforeTimestamp(
+    wallet: string,
+    filter: number,
+    limit?: number,
+    timestamp_lt?: string,
+    last_hash?: string
+  ): Promise<ListTransactionResponse> {
+    if (!wallet) {
+      throw new Error("wallet address cannot be empty");
+    }
+
+    let finalLimit = limit && limit > 0 ? limit : 20;
+    if (finalLimit > 1000) finalLimit = 1000;
+
+    const params: Record<string, string | number> = {
+      limit: finalLimit,
+      ...(timestamp_lt && { timestamp_lt }),
+      ...(last_hash && { last_hash }),
+    };
+
+    switch (filter) {
+      case API_FILTER_PARAMS.ALL:
+        params["wallet_address"] = wallet;
+        break;
+      case API_FILTER_PARAMS.SENT:
+        params["filter_from_address"] = wallet;
+        break;
+      case API_FILTER_PARAMS.RECEIVED:
+        params["filter_to_address"] = wallet;
+        break;
+      default:
+        break;
+    }
+
+    const path = `${this.chainId}/transactions/infinite`;
+    return this.makeRequest<ListTransactionResponse>("GET", path, params);
+  }
 
   async getTransactionByWallet(
     wallet: string,

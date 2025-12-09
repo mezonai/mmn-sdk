@@ -158,6 +158,9 @@ export interface Meta {
   limit?: number;
   total_items?: number;
   total_pages?: number;
+  has_more?: boolean;
+  next_timestamp?: string;
+  next_hash?: string;
 }
 
 export interface WalletDetail {
