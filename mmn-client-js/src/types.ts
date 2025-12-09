@@ -44,7 +44,7 @@ export interface ExtraInfo {
   ChannelId?: string;
   MessageRefId?: string;
   ExtraAttribute?: string;
-  [x: string]: string;
+  [x: string]: string | string[];
 }
 
 export interface TxMsg {
