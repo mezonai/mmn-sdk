@@ -112,24 +112,17 @@ export interface MmnClientConfig {
 
 // ----------------- Types Indexer -----------------
 
-export interface BaseTransaction {
+export interface Transaction {
   chain_id: string;
   hash: string;
   nonce: number;
   block_hash: string;
   block_number: number;
+  block_timestamp: number;
+  transaction_index: number;
   from_address: string;
   to_address: string;
   value: string; // uint256 -> string
-  transaction_type: number;
-  transaction_timestamp: number;
-  status?: number;
-  text_data?: string;
-  extra_info?: string;
-}
-export interface EvmTransaction extends BaseTransaction {
-  block_timestamp: number;
-  transaction_index: number;
   gas: number;
   gas_price: string;
   data: string;
@@ -137,20 +130,26 @@ export interface EvmTransaction extends BaseTransaction {
   max_fee_per_gas: string;
   max_priority_fee_per_gas: string;
   max_fee_per_blob_gas?: string;
-  effective_gas_price?: string;
   blob_versioned_hashes?: string[];
-  blob_gas_used?: number;
-  blob_gas_price?: string;
+  transaction_type: number;
   r: string;
   s: string;
   v: string;
-  gas_used?: number;
-  cumulative_gas_used?: number;
-  contract_address?: string;
-  logs_bloom?: string;
   access_list_json?: string;
   authorization_list_json?: string;
+  contract_address?: string;
+  gas_used?: number;
+  cumulative_gas_used?: number;
+  effective_gas_price?: string;
+  blob_gas_used?: number;
+  blob_gas_price?: string;
+  logs_bloom?: string;
+  status?: number;
+  transaction_timestamp: number;
+  text_data: string;
+  extra_info: string;
 }
+
 export interface Meta {
   chain_id: number;
   address?: string;
@@ -177,12 +176,12 @@ export interface WalletDetailResponse {
 
 export interface ListTransactionResponse {
   meta: Meta;
-  data?: EvmTransaction[];
+  data?: Transaction[];
 }
 
 export interface TransactionDetailResponse {
   data: {
-    transaction: EvmTransaction;
+    transaction: Transaction;
   };
 }
 

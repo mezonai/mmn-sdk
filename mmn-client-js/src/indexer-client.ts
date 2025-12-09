@@ -1,7 +1,7 @@
 import {
   IndexerClientConfig,
   ListTransactionResponse,
-  EvmTransaction,
+  Transaction,
   TransactionDetailResponse,
   WalletDetail,
   WalletDetailResponse,
@@ -106,12 +106,12 @@ export class IndexerClient {
     }
   }
 
-  async getTransactionByHash(hash: string): Promise<EvmTransaction> {
+  async getTransactionByHash(hash: string): Promise<Transaction> {
     const path = `${this.chainId}/tx/${hash}/detail`;
     const res = await this.makeRequest<TransactionDetailResponse>('GET', path);
     return res.data.transaction;
   }
-  async getInfiniteTransactionsByWallet(
+  async getTransactionsByWalletBeforeTimestamp(
     wallet: string,
     filter: number,
     limit?: number,
