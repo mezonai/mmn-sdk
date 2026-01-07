@@ -662,6 +662,16 @@ export class MmnClient {
     );
   }
 
+  async getCurrentNonceByAddress(
+    address: string,
+    tag: 'latest' | 'pending' = 'latest'
+  ): Promise<GetCurrentNonceResponse> {
+    return this.makeRequest<GetCurrentNonceResponse>(
+      'account.getcurrentnonce',
+      { address, tag }
+    );
+  }
+
   async getAccountByUserId(
     userId: string
   ): Promise<GetAccountByAddressResponse> {
