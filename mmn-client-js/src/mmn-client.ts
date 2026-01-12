@@ -3,20 +3,30 @@
 import bs58 from 'bs58';
 import nacl from 'tweetnacl';
 import CryptoJS from 'crypto-js';
+import { createClient, type Client } from '@connectrpc/connect';
+import { createConnectTransport } from '@connectrpc/connect-web';
 import {
   AddTxResponse,
   ExtraInfo,
   GetAccountByAddressResponse,
   GetCurrentNonceResponse,
   IEphemeralKeyPair,
-  JsonRpcRequest,
-  JsonRpcResponse,
   MmnClientConfig,
   SendTransactionRequest,
   SendTransactionBase,
   SignedTx,
   TxMsg,
 } from './types';
+import { AccountService } from './gen/account_connect.js';
+import { TxService } from './gen/tx_connect.js';
+import {
+  GetAccountRequest,
+  GetCurrentNonceRequest,
+} from './gen/account_pb.js';
+import {
+  SignedTxMsg,
+  TxMsg as ProtoTxMsg,
+} from './gen/tx_pb.js';
 
 // Buffer polyfill for mobile environments
 class BufferPolyfill {
@@ -156,73 +166,47 @@ const DECIMALS = 6;
 
 export class MmnClient {
   private config: MmnClientConfig;
-  private requestId = 0;
+  private accountClient: Client<typeof AccountService>;
+  private txClient: Client<typeof TxService>;
 
   constructor(config: MmnClientConfig) {
     this.config = {
       timeout: 30000,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers: {},
       ...config,
     };
+
+    // Create ConnectRPC transport with binary format
+    const transport = createConnectTransport({
+      baseUrl: this.config.baseUrl,
+      useBinaryFormat: true,
+    });
+
+    // Initialize gRPC clients
+    this.accountClient = createClient(AccountService, transport);
+    this.txClient = createClient(TxService, transport);
   }
 
-  private async makeRequest<T>(method: string, params?: unknown): Promise<T> {
-    const request: JsonRpcRequest = {
-      jsonrpc: '2.0',
-      method,
-      params,
-      id: ++this.requestId,
-    };
-
-    // Create AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      this.config.timeout || 30000
-    );
-
-    try {
-      const requestOptions: RequestInit = {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'omit',
-        signal: controller.signal,
-        headers: this.config.headers || {},
-        body: JSON.stringify(request),
-      };
-
-      const response = await fetch(this.config.baseUrl, requestOptions);
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const result: JsonRpcResponse<T> = await response.json();
-
-      if (result.error) {
-        throw new Error(
-          `JSON-RPC Error ${result.error.code}: ${result.error.message}`
-        );
-      }
-
-      return result.result as T;
-    } catch (error) {
-      clearTimeout(timeoutId);
-
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error(
-            `Request timeout after ${this.config.timeout || 30000}ms`
-          );
-        }
-        throw error;
-      }
-      throw new Error('Unknown error occurred');
-    }
+  /**
+   * Map SignedTx (old format, snake_case) to SignedTxMsg (Proto, camelCase)
+   */
+  private mapSignedTxToProto(signedTx: SignedTx): SignedTxMsg {
+    const txMsg = signedTx.tx_msg;
+    return new SignedTxMsg({
+      txMsg: new ProtoTxMsg({
+        type: txMsg.type,
+        sender: txMsg.sender,
+        recipient: txMsg.recipient,
+        amount: txMsg.amount,
+        timestamp: BigInt(txMsg.timestamp),
+        textData: txMsg.text_data,
+        nonce: BigInt(txMsg.nonce),
+        extraInfo: txMsg.extra_info,
+        zkProof: txMsg.zk_proof,
+        zkPub: txMsg.zk_pub,
+      }),
+      signature: signedTx.signature,
+    });
   }
 
   /**
@@ -592,10 +576,30 @@ export class MmnClient {
   }
 
   /**
-   * Add a signed transaction to the blockchain
+   * Add a signed transaction to the blockchain using ConnectRPC
    */
   private async addTx(signedTx: SignedTx): Promise<AddTxResponse> {
-    return this.makeRequest<AddTxResponse>('tx.addtx', signedTx);
+    try {
+      // Map old SignedTx format to Proto SignedTxMsg
+      const protoSignedTx = this.mapSignedTxToProto(signedTx);
+      
+      // Call gRPC service
+      const response = await this.txClient.addTx(protoSignedTx);
+      
+      // Map Proto response back to old interface format
+      return {
+        ok: response.ok,
+        tx_hash: response.txHash,
+        error: response.error,
+      };
+    } catch (error) {
+      // Return error in the old format
+      return {
+        ok: false,
+        tx_hash: '',
+        error: error instanceof Error ? error.message : 'Unknown RPC error',
+      };
+    }
   }
 
   /**
@@ -649,26 +653,61 @@ export class MmnClient {
   }
 
   /**
-   * Get current nonce for an account
+   * Get current nonce for an account using ConnectRPC
    */
   async getCurrentNonce(
     userId: string,
     tag: 'latest' | 'pending' = 'latest'
   ): Promise<GetCurrentNonceResponse> {
-    const address = this.getAddressFromUserId(userId);
-    return this.makeRequest<GetCurrentNonceResponse>(
-      'account.getcurrentnonce',
-      { address, tag }
-    );
+    try {
+      const address = this.getAddressFromUserId(userId);
+      const request = new GetCurrentNonceRequest({ address, tag });
+      const response = await this.accountClient.getCurrentNonce(request);
+      
+      // Map Proto response to old interface (bigint -> number)
+      return {
+        address: response.address,
+        nonce: Number(response.nonce),
+        tag: response.tag,
+        error: response.error,
+      };
+    } catch (error) {
+      return {
+        address: '',
+        nonce: 0,
+        tag: '',
+        error: error instanceof Error ? error.message : 'Unknown RPC error',
+      };
+    }
   }
 
+  /**
+   * Get account details by user ID using ConnectRPC
+   */
   async getAccountByUserId(
     userId: string
   ): Promise<GetAccountByAddressResponse> {
-    const address = this.getAddressFromUserId(userId);
-    return this.makeRequest<GetAccountByAddressResponse>('account.getaccount', {
-      address,
-    });
+    try {
+      const address = this.getAddressFromUserId(userId);
+      const request = new GetAccountRequest({ address });
+      const response = await this.accountClient.getAccount(request);
+      
+      // Map Proto response to old interface (bigint -> number)
+      return {
+        address: response.address,
+        balance: response.balance,
+        nonce: Number(response.nonce),
+        decimals: response.decimals,
+      };
+    } catch (error) {
+      // Return default error response matching old interface
+      return {
+        address: '',
+        balance: '0',
+        nonce: 0,
+        decimals: DECIMALS,
+      };
+    }
   }
 
   scaleAmountToDecimals(
