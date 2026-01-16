@@ -582,10 +582,10 @@ export class MmnClient {
     try {
       // Map old SignedTx format to Proto SignedTxMsg
       const protoSignedTx = this.mapSignedTxToProto(signedTx);
-      
+
       // Call gRPC service
       const response = await this.txClient.addTx(protoSignedTx);
-      
+
       // Map Proto response back to old interface format
       return {
         ok: response.ok,
@@ -663,7 +663,7 @@ export class MmnClient {
       const address = this.getAddressFromUserId(userId);
       const request = new GetCurrentNonceRequest({ address, tag });
       const response = await this.accountClient.getCurrentNonce(request);
-      
+
       // Map Proto response to old interface (bigint -> number)
       return {
         address: response.address,
@@ -691,7 +691,7 @@ export class MmnClient {
       const address = this.getAddressFromUserId(userId);
       const request = new GetAccountRequest({ address });
       const response = await this.accountClient.getAccount(request);
-      
+
       // Map Proto response to old interface (bigint -> number)
       return {
         address: response.address,
