@@ -9,6 +9,7 @@ require (
 	github.com/consensys/gnark-crypto v0.9.1
 	github.com/holiman/uint256 v1.3.2
 	github.com/mr-tron/base58 v1.2.0
+	github.com/planetscale/vtprotobuf v0.6.1-0.20240917153116-6f2963f01587
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10
 )
