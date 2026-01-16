@@ -212,7 +212,7 @@ export class IndexerClient {
     }
 
     // Build URL with query params
-    const path = `${this.chainId}/transactions/infinite`;
+    const path = `v2/${this.chainId}/transactions/infinite`;
     let url = `${this.endpoint}/${path}`;
     if (Object.keys(params).length > 0) {
       const searchParams = new URLSearchParams();
@@ -245,8 +245,8 @@ export class IndexerClient {
           const errorData = await response.json();
           throw new Error(
             errorData.message ||
-              errorData.error ||
-              `HTTP ${response.status}: ${response.statusText}`
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`
           );
         } catch (jsonError) {
           if (jsonError instanceof Error && jsonError.message.includes('HTTP')) {
