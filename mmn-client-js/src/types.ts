@@ -200,17 +200,9 @@ export interface ZkClientConfig {
   headers?: Record<string, string>;
 }
 
-export enum EZkClientType {
-  MEZON = 'mezon',
-  OAUTH = 'oauth',
-}
-
 export interface GetZkProofRequest {
-  userId: string;
   ephemeralPublicKey: string;
   jwt: string;
-  address: string;
-  clientType?: EZkClientType;
 }
 
 export interface IZkProof {
