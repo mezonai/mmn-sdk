@@ -7,7 +7,17 @@ const { dts } = require('rollup-plugin-dts');
 const packageJson = require('./package.json');
 
 // External dependencies that should not be bundled
-const external = ['crypto', 'axios', 'bs58', 'bip39', 'tweetnacl'];
+const external = [
+  'crypto',
+  'axios',
+  'bs58',
+  'bip39',
+  'tweetnacl',
+  'crypto-js',
+  '@bufbuild/protobuf',
+  '@connectrpc/connect',
+  '@connectrpc/connect-web',
+];
 
 module.exports = [
   // ES Module build
