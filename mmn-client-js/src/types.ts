@@ -193,6 +193,13 @@ export interface IndexerClientConfig {
   headers?: Record<string, string>;
 }
 
+// ----------------- Dong Client -----------------
+export interface DongClientConfig {
+  endpoint: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+}
+
 // ----------------- Zk Client -----------------
 export interface ZkClientConfig {
   endpoint: string;
@@ -216,4 +223,28 @@ export interface GetZkProofRequest {
 export interface IZkProof {
   proof: string;
   public_input: string;
+}
+
+// ----------------- Red Envelope Types -----------------
+
+export interface ClaimRedEnvelopeQRRequest {
+  id: string; // Red Envelope ID
+  user_id: string;
+  proof_b64: string;
+  public_b64: string;
+  publickey: string;
+}
+
+export interface ClaimRedEnvelopeQRResponse {
+  split_money_id: number;
+  amount: number;
+  description: string;
+}
+
+export interface ExecuteClaimRedEnvelopeQRRequest {
+  split_money_id: number;
+  user_id: string;
+  proof_b64: string;
+  public_b64: string;
+  publickey: string;
 }
