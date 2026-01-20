@@ -217,3 +217,27 @@ export interface IZkProof {
   proof: string;
   public_input: string;
 }
+
+// ----------------- Red Envelope Types -----------------
+
+export interface ClaimRedEnvelopeQRRequest {
+  id: string; // Red Envelope ID
+  user_id: string;
+  proof_b64: string;
+  public_b64: string;
+  publickey: string;
+}
+
+export interface ClaimRedEnvelopeQRResponse {
+  split_money_id: number;
+  amount: number;
+  description: string;
+}
+
+export interface ExecuteClaimRedEnvelopeQRRequest {
+  split_money_id: number;
+  user_id: string;
+  proof_b64: string;
+  public_b64: string;
+  publickey: string;
+}
