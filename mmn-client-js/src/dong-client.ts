@@ -1,5 +1,5 @@
 import {
-    MmnClientConfig,
+    DongClientConfig,
     ClaimRedEnvelopeQRRequest,
     ClaimRedEnvelopeQRResponse,
     ExecuteClaimRedEnvelopeQRRequest,
@@ -10,8 +10,8 @@ export class DongClient {
     private timeout: number;
     private headers: Record<string, string>;
 
-    constructor(config: MmnClientConfig) {
-        this.endpoint = config.baseUrl;
+    constructor(config: DongClientConfig) {
+        this.endpoint = config.endpoint;
         this.timeout = config.timeout || 30000;
         this.headers = {
             Accept: 'application/json',

@@ -193,6 +193,13 @@ export interface IndexerClientConfig {
   headers?: Record<string, string>;
 }
 
+// ----------------- Dong Client -----------------
+export interface DongClientConfig {
+  endpoint: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+}
+
 // ----------------- Zk Client -----------------
 export interface ZkClientConfig {
   endpoint: string;
