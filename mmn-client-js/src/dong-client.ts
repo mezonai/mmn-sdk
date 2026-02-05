@@ -3,6 +3,9 @@ import {
     ClaimRedEnvelopeQRRequest,
     ClaimRedEnvelopeQRResponse,
     ExecuteClaimRedEnvelopeQRRequest,
+    CreateRedEnvelopeMobileRequest,
+    RedEnvelopeResponse,
+    UpdateRedEnvelopeStatusQRRequest,
 } from './types';
 
 export class DongClient {
@@ -109,5 +112,30 @@ export class DongClient {
     ): Promise<void> {
         const path = `api/v1/red-envelopes/qr/${id}/claim`;
         await this.makeRequest<void>('POST', path, undefined, params);
+    } 
+
+    async createRedEnvelope(
+        params: CreateRedEnvelopeMobileRequest
+      ): Promise<RedEnvelopeResponse> {
+        const path = `api/v1/red-envelopes/qr/create`;
+    
+        return this.makeRequest<RedEnvelopeResponse>(
+          "POST",
+          path,
+          undefined,
+          params
+        );
+    }
+    async updateRedEnvelopeStatusMobile(
+        params: UpdateRedEnvelopeStatusQRRequest
+      ): Promise<{ id: string; status: string }> {
+        const path = `api/v1/red-envelopes/qr/update-status-red-envelope`;
+      
+        return this.makeRequest<{ id: string; status: string }>(
+          "POST",
+          path,
+          undefined,
+          params
+        );
     }
 }
