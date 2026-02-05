@@ -1,7 +1,9 @@
 // --- JSON-RPC Types ---
 
+import { UUID } from "crypto";
+
 export interface JsonRpcRequest {
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   method: string;
   params?: unknown;
   id: string | number;
@@ -14,7 +16,7 @@ export interface JsonRpcError {
 }
 
 export interface JsonRpcResponse<T = unknown> {
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
   result?: T;
   error?: JsonRpcError;
   id: string | number;
@@ -28,9 +30,9 @@ export interface IEphemeralKeyPair {
 }
 
 export enum ETransferType {
-  GiveCoffee = 'give_coffee',
-  TransferToken = 'transfer_token',
-  UnlockItem = 'unlock_item',
+  GiveCoffee = "give_coffee",
+  TransferToken = "transfer_token",
+  UnlockItem = "unlock_item",
 }
 
 export interface ExtraInfo {
@@ -208,8 +210,8 @@ export interface ZkClientConfig {
 }
 
 export enum EZkClientType {
-  MEZON = 'mezon',
-  OAUTH = 'oauth',
+  MEZON = "mezon",
+  OAUTH = "oauth",
 }
 
 export interface GetZkProofRequest {
@@ -226,13 +228,45 @@ export interface IZkProof {
 }
 
 // ----------------- Red Envelope Types -----------------
-
-export interface ClaimRedEnvelopeQRRequest {
-  id: string; // Red Envelope ID
+export interface ZKAuth {
   user_id: string;
   proof_b64: string;
   public_b64: string;
   publickey: string;
+}
+export interface CreateRedEnvelopeRequest {
+  name: string;
+  description?: string;
+  total_amount: number;
+  min_amount?: number;
+  max_amount?: number;
+  total_claims: number;
+  owner_wallet: string;
+  is_random_distribution: boolean;
+  start_date: string; // ISO Date string
+  end_date?: string;
+}
+export type CreateRedEnvelopeMobileRequest = CreateRedEnvelopeRequest & ZKAuth;
+export const enum RedEnvelopeStatus {
+  Published = 2,
+  Failed = 3,
+  Expired = 4,
+}
+export interface UpdateRedEnvelopeStatusQRRequest extends ZKAuth {
+  id: string;
+  status: RedEnvelopeStatus;
+}
+export interface RedEnvelopeResponse {
+  id: UUID;
+  name: string;
+  total_amount: number;
+  total_claims: number;
+  status: string;
+  created_at: string;
+  claimed_count: number;
+}
+export interface ClaimRedEnvelopeQRRequest extends ZKAuth {
+  id: string; // Red Envelope ID
 }
 
 export interface ClaimRedEnvelopeQRResponse {
@@ -241,10 +275,6 @@ export interface ClaimRedEnvelopeQRResponse {
   description: string;
 }
 
-export interface ExecuteClaimRedEnvelopeQRRequest {
+export interface ExecuteClaimRedEnvelopeQRRequest extends ZKAuth {
   split_money_id: number;
-  user_id: string;
-  proof_b64: string;
-  public_b64: string;
-  publickey: string;
 }
