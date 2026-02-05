@@ -1,17 +1,83 @@
 import {
   IndexerClientConfig,
   ListTransactionResponse,
+  Meta,
   Transaction,
   TransactionDetailResponse,
   WalletDetail,
   WalletDetailResponse,
 } from './types';
+import {
+  TransactionInfiniteResponse,
+  TransactionItem,
+} from './gen/transaction_infinite_pb';
 
 const API_FILTER_PARAMS = {
   ALL: 0,
   SENT: 2,
   RECEIVED: 1,
 };
+
+/**
+ * Convert protobuf TransactionItem to Transaction type
+ */
+function mapTransactionItemToTransaction(item: TransactionItem): Transaction {
+  const transaction: Transaction = {
+    chain_id: item.chainId,
+    hash: item.hash,
+    nonce: Number(item.nonce),
+    block_hash: item.blockHash,
+    block_number: Number(item.blockNumber),
+    block_timestamp: 0,
+    transaction_index: 0,
+    from_address: item.fromAddress,
+    to_address: item.toAddress,
+    value: item.value,
+    gas: 0,
+    gas_price: '0',
+    data: '',
+    function_selector: '',
+    max_fee_per_gas: '0',
+    max_priority_fee_per_gas: '0',
+    transaction_type: item.transactionType,
+    r: '',
+    s: '',
+    v: '',
+    transaction_timestamp: Number(item.transactionTimestamp),
+    text_data: item.textData,
+    extra_info: item.extraInfo,
+  };
+
+  if (item.status !== undefined) {
+    transaction.status = Number(item.status);
+  }
+
+  return transaction;
+}
+
+/**
+ * Convert protobuf TransactionInfiniteResponse to ListTransactionResponse
+ */
+function mapProtoToListTransactionResponse(
+  protoResponse: TransactionInfiniteResponse
+): ListTransactionResponse {
+  const meta: Meta = {
+    chain_id: Number(protoResponse.meta?.chainId) || 0,
+    page: protoResponse.meta?.page || 0,
+    limit: protoResponse.meta?.limit || 0,
+    has_more: protoResponse.meta?.hasMore || false,
+    next_hash: protoResponse.meta?.nextHash || '',
+  };
+
+  // Only set next_timestamp if it exists
+  if (protoResponse.meta?.nextTimestamp) {
+    meta.next_timestamp = protoResponse.meta.nextTimestamp.toString();
+  }
+
+  const data: Transaction[] = protoResponse.data.map(mapTransactionItemToTransaction);
+
+  return { meta, data };
+}
 
 export class IndexerClient {
   private endpoint: string;
@@ -145,8 +211,66 @@ export class IndexerClient {
         break;
     }
 
-    const path = `${this.chainId}/transactions/infinite`;
-    return this.makeRequest<ListTransactionResponse>("GET", path, params);
+    // Build URL with query params
+    const path = `v2/${this.chainId}/transactions/infinite`;
+    let url = `${this.endpoint}/${path}`;
+    if (Object.keys(params).length > 0) {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        searchParams.append(key, String(value));
+      });
+      url += `?${searchParams.toString()}`;
+    }
+
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        signal: controller.signal,
+        headers: {
+          Accept: 'application/x-protobuf',
+          ...this.headers,
+        },
+      });
+      clearTimeout(timeoutId);
+
+      // Handle HTTP errors - server returns JSON for errors
+      if (!response.ok) {
+        try {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+            errorData.error ||
+            `HTTP ${response.status}: ${response.statusText}`
+          );
+        } catch (jsonError) {
+          if (jsonError instanceof Error && jsonError.message.includes('HTTP')) {
+            throw jsonError;
+          }
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+      }
+
+      // Parse binary protobuf response
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const protoResponse = TransactionInfiniteResponse.fromBinary(uint8Array);
+      return mapProtoToListTransactionResponse(protoResponse);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error(`Request timeout after ${this.timeout}ms`);
+        }
+        throw error;
+      }
+      throw new Error('Request failed');
+    }
   }
 
   async getTransactionByWallet(
