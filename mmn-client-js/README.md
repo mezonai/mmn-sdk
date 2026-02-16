@@ -111,10 +111,8 @@ const zkClient = new ZkClient({
 
 // Generate ZK proof for authentication
 const zkProof = await zkClient.getZkProofs({
-  userId: 'user123',
   ephemeralPublicKey: keyPair.publicKey,
   jwt: 'jwt-token',
-  address: 'wallet-address',
 });
 ```
 
@@ -223,10 +221,8 @@ Generate ZK proof for authentication.
 
 ```typescript
 const zkProof = await zkClient.getZkProofs({
-  userId: 'user123',
   ephemeralPublicKey: 'ephemeral-public-key',
   jwt: 'jwt-token',
-  address: 'wallet-address',
 });
 ```
 
