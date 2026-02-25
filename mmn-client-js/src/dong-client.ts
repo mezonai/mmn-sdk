@@ -64,7 +64,9 @@ export class DongClient {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const errorText = await response.text().catch(() => 'No error body');
+                console.error(`[DongClient] Request failed with status ${response.status}: ${errorText}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
             }
 
             const json = await response.json();
@@ -74,12 +76,27 @@ export class DongClient {
             clearTimeout(timeoutId);
             if (error instanceof Error) {
                 if (error.name === 'AbortError') {
+                    console.error(`[DongClient] Request timeout after ${this.timeout}ms for ${url}`);
                     throw new Error(`Request timeout after ${this.timeout}ms`);
                 }
+                console.error(`[DongClient] Error during request to ${url}:`, error.message);
                 throw error;
             }
+            console.error(`[DongClient] Unknown error during request to ${url}`);
             throw new Error('Request failed');
         }
+    }
+
+    private async get<T>(path: string, params?: Record<string, string | number>): Promise<T> {
+        return this.makeRequest<T>('GET', path, params);
+    }
+
+    private async post<T>(
+        path: string,
+        body?: any,
+        params?: Record<string, string | number>
+    ): Promise<T> {
+        return this.makeRequest<T>('POST', path, params, body);
     }
 
     // --- Red Envelope QR APIs ---
@@ -98,12 +115,7 @@ export class DongClient {
 
         const queryParams = { id: params.id };
 
-        return this.makeRequest<ClaimRedEnvelopeQRResponse>(
-            'POST',
-            path,
-            queryParams,
-            body
-        );
+        return this.post<ClaimRedEnvelopeQRResponse>(path, body, queryParams);
     }
 
     async claimRedEnvelopeQR(
@@ -111,7 +123,7 @@ export class DongClient {
         params: ExecuteClaimRedEnvelopeQRRequest
     ): Promise<void> {
         const path = `api/v1/red-envelopes/qr/${id}/claim`;
-        await this.makeRequest<void>('POST', path, undefined, params);
+        await this.post<void>(path, params);
     } 
 
     async createRedEnvelope(
@@ -119,23 +131,13 @@ export class DongClient {
       ): Promise<RedEnvelopeResponse> {
         const path = `api/v1/red-envelopes/qr/create`;
     
-        return this.makeRequest<RedEnvelopeResponse>(
-          "POST",
-          path,
-          undefined,
-          params
-        );
+        return this.post<RedEnvelopeResponse>(path, params);
     }
     async updateRedEnvelopeStatusMobile(
         params: UpdateRedEnvelopeStatusQRRequest
       ): Promise<{ id: string; status: string }> {
         const path = `api/v1/red-envelopes/qr/update-status-red-envelope`;
       
-        return this.makeRequest<{ id: string; status: string }>(
-          "POST",
-          path,
-          undefined,
-          params
-        );
+        return this.post<{ id: string; status: string }>(path, params);
     }
 }
