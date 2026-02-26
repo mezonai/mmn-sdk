@@ -133,11 +133,4 @@ export class DongClient {
     
         return this.post<RedEnvelopeResponse>(path, params);
     }
-    async updateRedEnvelopeStatusMobile(
-        params: UpdateRedEnvelopeStatusQRRequest
-      ): Promise<{ id: string; status: string }> {
-        const path = `api/v1/red-envelopes/qr/update-status-red-envelope`;
-      
-        return this.post<{ id: string; status: string }>(path, params);
-    }
 }
