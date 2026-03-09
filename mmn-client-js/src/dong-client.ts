@@ -5,8 +5,9 @@ import {
     ExecuteClaimRedEnvelopeQRRequest,
     CreateRedEnvelopeMobileRequest,
     RedEnvelopeResponse,
-    UpdateRedEnvelopeStatusQRRequest,
 } from './types';
+
+const DEFAULT_ERROR_BODY = 'No error body';
 
 export class DongClient {
     private endpoint: string;
@@ -64,8 +65,7 @@ export class DongClient {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                const errorText = await response.text().catch(() => 'No error body');
-                console.error(`[DongClient] Request failed with status ${response.status}: ${errorText}`);
+                const errorText = await response.text().catch(() => DEFAULT_ERROR_BODY);
                 throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
             }
 
@@ -76,7 +76,6 @@ export class DongClient {
             clearTimeout(timeoutId);
             if (error instanceof Error) {
                 if (error.name === 'AbortError') {
-                    console.error(`[DongClient] Request timeout after ${this.timeout}ms for ${url}`);
                     throw new Error(`Request timeout after ${this.timeout}ms`);
                 }
                 console.error(`[DongClient] Error during request to ${url}:`, error.message);
