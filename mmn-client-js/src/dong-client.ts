@@ -5,7 +5,9 @@ import {
     ExecuteClaimRedEnvelopeQRRequest,
     CreateRedEnvelopeMobileRequest,
     RedEnvelopeResponse,
+    RedEnvelopeStatusResponse,
 } from './types';
+import { MmnClient } from './mmn-client';
 
 const DEFAULT_ERROR_BODY = 'No error body';
 
@@ -126,10 +128,49 @@ export class DongClient {
     } 
 
     async createRedEnvelope(
-        params: CreateRedEnvelopeMobileRequest
+        params: CreateRedEnvelopeMobileRequest,
+        mmnClient?: MmnClient,
+        privateKey?: string
       ): Promise<RedEnvelopeResponse> {
         const path = `api/v1/red-envelopes/qr/create`;
     
-        return this.post<RedEnvelopeResponse>(path, params);
+        let envelope = await this.post<RedEnvelopeResponse>(path, params);
+
+        if (mmnClient && privateKey) {
+            const senderAddress = mmnClient.getAddressFromUserId(params.user_id);
+            const { nonce } = await mmnClient.getCurrentNonce(params.user_id);
+
+            await mmnClient.sendTransactionByAddress({
+                sender: senderAddress,
+                recipient: envelope.red_envelope_wallet,
+                amount: envelope.total_amount.toString(),
+                nonce: nonce,
+                privateKey: privateKey,
+                zkProof: params.proof_b64,
+                zkPub: params.public_b64,
+                publicKey: params.publickey,
+            });
+
+            // Polling: every 2 seconds in 2 times
+            for (let i = 0; i < 2; i++) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                try {
+                    const statusRes = await this.getRedEnvelopeStatus(envelope.id);
+                    if (statusRes.status === 'PUBLISHED') {
+                        envelope.status = statusRes.status;
+                        break;
+                    }
+                } catch (error) {
+                    console.error('[DongClient] Error polling red envelope status:', error);
+                }
+            }
+        }
+
+        return envelope;
+    }
+
+    async getRedEnvelopeStatus(id: string): Promise<RedEnvelopeStatusResponse> {
+        const path = `api/v1/red-envelopes/qr/${id}/status`;
+        return this.get<RedEnvelopeStatusResponse>(path);
     }
 }

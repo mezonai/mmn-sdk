@@ -264,6 +264,11 @@ export interface RedEnvelopeResponse {
   status: string;
   created_at: string;
   claimed_count: number;
+  red_envelope_wallet: string;
+}
+export interface RedEnvelopeStatusResponse {
+  id: string;
+  status: string;
 }
 export interface ClaimRedEnvelopeQRRequest extends ZKAuth {
   id: string; // Red Envelope ID
