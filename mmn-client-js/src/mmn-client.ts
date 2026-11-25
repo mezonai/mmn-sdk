@@ -693,14 +693,12 @@ export class MmnClient {
   }
 
   validateAddress(addr: string): boolean {
-    const decoded = bs58.decode(addr);
-    if (
-      !decoded ||
-      decoded.length !== CRYPTO_CONSTANTS.ED25519_PUBLIC_KEY_LENGTH
-    ) {
+    try {
+      const decoded = bs58.decode(addr);
+      return decoded.length === CRYPTO_CONSTANTS.ED25519_PUBLIC_KEY_LENGTH;
+    } catch {
       return false;
     }
-    return true;
   }
 
   validateAmount(balance: string, amount: string | number): boolean {

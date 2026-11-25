@@ -28,9 +28,14 @@ namespace MmnDotNetSdk
         private readonly HttpClient _httpClient;
         private readonly string _endpoint;
         public ZkProveClient(string endpoint)
+            : this(endpoint, new HttpClient { Timeout = TimeSpan.FromSeconds(30) })
         {
-            _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        }
+
+        public ZkProveClient(string endpoint, HttpClient httpClient)
+        {
             _endpoint = endpoint;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         public async Task<ProveResponse?> GenerateZkProof(string userId, string address, string ephemeralPk, string jwt)

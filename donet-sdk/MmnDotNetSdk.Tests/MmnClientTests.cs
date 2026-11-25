@@ -128,6 +128,7 @@ namespace MmnDotNetSdk.Tests
         }
 
         [Fact]
+        [Trait("Category", "Live")]
         public async Task TestClient_CheckHealth()
         {
             try
@@ -156,6 +157,7 @@ namespace MmnDotNetSdk.Tests
         }
 
         [Fact]
+        [Trait("Category", "Live")]
         public async Task TestClient_ZkHealthCheck()
         {
             try
@@ -186,6 +188,7 @@ namespace MmnDotNetSdk.Tests
         }
 
         [Fact]
+        [Trait("Category", "Live")]
         public async Task TestClient_SendTokenZk()
         {
             try
@@ -247,6 +250,7 @@ namespace MmnDotNetSdk.Tests
         }
 
         [Fact]
+        [Trait("Category", "Live")]
         public async Task TestClient_SendTokenKeyPair()
         {
             try

@@ -1,6 +1,6 @@
 {
   "name": "mmn-client-js",
-  "version": "1.0.15",
+  "version": "1.0.17",
   "description": "A comprehensive TypeScript client for interacting with MMN blockchain via JSON-RPC",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -15,7 +15,8 @@
     "build:watch": "rollup -c -w",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "npm run build && node --test test/*.test.mjs"
   },
   "keywords": [
     "mmn",
