@@ -14,9 +14,12 @@ namespace MmnDotNetSdk.Models
         public long Timestamp { get; set; }
         public string TextData { get; set; } = string.Empty;
         public ulong Nonce { get; set; }
+        public ulong Slot { get; set; }
+        public string Blockhash { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string ErrMsg { get; set; } = string.Empty;
         public string ExtraInfo { get; set; } = string.Empty;
+        public string TxHash { get; set; } = string.Empty;
 
         /// <summary>
         /// Deserialize extra info from JSON string

@@ -1,4 +1,5 @@
-﻿using Grpc.Net.Client;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
 using Mmn;
 using MmnDotNetSdk.Models;
 using MmnDotNetSdk.Utils;
@@ -8,18 +9,34 @@ namespace MmnDotNetSdk
 {
     public class MmnNodeClient
     {
-        private readonly GrpcChannel _channel;
+        private readonly GrpcChannel? _channel;
         private readonly HealthService.HealthServiceClient _healthClient;
         private readonly TxService.TxServiceClient _txClient;
         private readonly AccountService.AccountServiceClient _accClient;
         private bool _disposed = false;
 
-        public MmnNodeClient(string endpoint)
+        public MmnNodeClient(string endpoint) : this(GrpcChannel.ForAddress(endpoint))
         {
-            _channel = GrpcChannel.ForAddress(endpoint);
+        }
+
+        public MmnNodeClient(GrpcChannel channel)
+        {
+            _channel = channel ?? throw new ArgumentNullException(nameof(channel));
             _healthClient = new HealthService.HealthServiceClient(_channel);
             _txClient = new TxService.TxServiceClient(_channel);
             _accClient = new AccountService.AccountServiceClient(_channel);
+        }
+
+        public MmnNodeClient(CallInvoker callInvoker)
+        {
+            if (callInvoker == null)
+            {
+                throw new ArgumentNullException(nameof(callInvoker));
+            }
+
+            _healthClient = new HealthService.HealthServiceClient(callInvoker);
+            _txClient = new TxService.TxServiceClient(callInvoker);
+            _accClient = new AccountService.AccountServiceClient(callInvoker);
         }
 
         public async Task<Mmn.HealthCheckResponse> CheckHealthAsync(CancellationToken cancellationToken = default)
@@ -133,9 +150,12 @@ namespace MmnDotNetSdk
                     Timestamp = (long)response.Tx.Timestamp,
                     TextData = response.Tx.TextData,
                     Nonce = response.Tx.Nonce,
+                    Slot = response.Tx.Slot,
+                    Blockhash = response.Tx.Blockhash,
                     Status = response.Tx.Status.ToString(),
                     ErrMsg = response.Tx.ErrMsg,
-                    ExtraInfo = response.Tx.ExtraInfo
+                    ExtraInfo = response.Tx.ExtraInfo,
+                    TxHash = response.Tx.TxHash
                 };
             }
             catch (Exception ex)
@@ -150,6 +170,11 @@ namespace MmnDotNetSdk
             {
                 var response = await _accClient.GetCurrentNonceAsync(new GetCurrentNonceRequest { Address = address, Tag = tag }, cancellationToken: cancellationToken);
 
+                if (!string.IsNullOrEmpty(response.Error))
+                {
+                    throw new InvalidOperationException($"Get current nonce failed: {response.Error}");
+                }
+
                 return response.Nonce;
             }
             catch (Exception ex)
@@ -158,7 +183,7 @@ namespace MmnDotNetSdk
             }
         }
 
-        public GrpcChannel Channel => _channel;
+        public GrpcChannel? Channel => _channel;
 
         public void Dispose()
         {
